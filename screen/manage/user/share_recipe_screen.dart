@@ -17,13 +17,24 @@ class _ShareRecipeScreenState extends State<ShareRecipeScreen> {
   String _instructions = '';
   String _imageUrl = '';
   int _categoryId = 1; // Ví dụ: bạn có thể thay đổi danh mục nếu cần
+  bool _isSubmitting = false; // Để theo dõi trạng thái gửi dữ liệu
 
   Future<void> _shareRecipe() async {
+    if (!_formKey.currentState!.validate()) {
+      return; // Không gửi nếu form không hợp lệ
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('token'); // Lấy token từ SharedPreferences
 
     if (token == null) {
-      // Xử lý nếu token không có (người dùng chưa đăng nhập)
+      setState(() {
+        _isSubmitting = false;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Bạn cần đăng nhập để chia sẻ công thức')),
       );
@@ -51,6 +62,10 @@ class _ShareRecipeScreenState extends State<ShareRecipeScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Đã xảy ra lỗi khi chia sẻ công thức')),
       );
+    } finally {
+      setState(() {
+        _isSubmitting = false;
+      });
     }
   }
 
@@ -64,44 +79,118 @@ class _ShareRecipeScreenState extends State<ShareRecipeScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Tên công thức'),
-                onChanged: (value) => setState(() {
-                  _recipeName = value;
-                }),
-              ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Mô tả'),
-                onChanged: (value) => setState(() {
-                  _description = value;
-                }),
-              ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Nguyên liệu'),
-                onChanged: (value) => setState(() {
-                  _ingredients = value;
-                }),
-              ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Cách làm'),
-                onChanged: (value) => setState(() {
-                  _instructions = value;
-                }),
-              ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'URL hình ảnh'),
-                onChanged: (value) => setState(() {
-                  _imageUrl = value;
-                }),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _shareRecipe,
-                child: const Text('Chia sẻ công thức'),
-              ),
-            ],
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Tên công thức
+                TextFormField(
+                  decoration: const InputDecoration(
+                    labelText: 'Tên công thức',
+                    border: OutlineInputBorder(),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blue),
+                    ),
+                  ),
+                  onChanged: (value) => setState(() {
+                    _recipeName = value;
+                  }),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Vui lòng nhập tên công thức';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 10),
+
+                // Mô tả
+                TextFormField(
+                  decoration: const InputDecoration(
+                    labelText: 'Mô tả',
+                    border: OutlineInputBorder(),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blue),
+                    ),
+                  ),
+                  onChanged: (value) => setState(() {
+                    _description = value;
+                  }),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Vui lòng nhập mô tả';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 10),
+
+                // Nguyên liệu
+                TextFormField(
+                  decoration: const InputDecoration(
+                    labelText: 'Nguyên liệu',
+                    border: OutlineInputBorder(),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blue),
+                    ),
+                  ),
+                  onChanged: (value) => setState(() {
+                    _ingredients = value;
+                  }),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Vui lòng nhập nguyên liệu';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 10),
+
+                // Cách làm
+                TextFormField(
+                  decoration: const InputDecoration(
+                    labelText: 'Cách làm',
+                    border: OutlineInputBorder(),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blue),
+                    ),
+                  ),
+                  onChanged: (value) => setState(() {
+                    _instructions = value;
+                  }),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Vui lòng nhập cách làm';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 10),
+
+                // URL hình ảnh
+                TextFormField(
+                  decoration: const InputDecoration(
+                    labelText: 'URL hình ảnh',
+                    border: OutlineInputBorder(),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blue),
+                    ),
+                  ),
+                  onChanged: (value) => setState(() {
+                    _imageUrl = value;
+                  }),
+                ),
+                const SizedBox(height: 20),
+
+                // Nút chia sẻ công thức
+                _isSubmitting
+                    ? const Center(child: CircularProgressIndicator())
+                    : ElevatedButton(
+                        onPressed: _shareRecipe,
+                        child: const Text('Chia sẻ công thức'),
+                      ),
+              ],
+            ),
           ),
         ),
       ),

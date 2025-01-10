@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../fetch_api.dart';
 import '../../auth/log_out.dart';
 
 Future<void> showProfileMenu(BuildContext context) async {
@@ -59,6 +60,22 @@ Future<void> showProfileMenu(BuildContext context) async {
                   '/my-recipes'); // Đường dẫn đến màn hình xem công thức
             },
           ),
+          // Nếu role là User, hiển thị mục danh sách yêu thích
+          if (role == 'User')
+            ListTile(
+              leading: const Icon(Icons.favorite),
+              title: const Text('Danh sách yêu thích'),
+              onTap: () async {
+                // Gọi API lấy danh sách yêu thích
+                List<int> favorites = await FetchApi.fetchFavorites();
+                // Xử lý và hiển thị danh sách yêu thích
+                Navigator.pushNamed(
+                  context,
+                  '/favorites', // Đường dẫn đến màn hình danh sách yêu thích
+                  arguments: favorites, // Truyền danh sách yêu thích vào
+                );
+              },
+            ),
           // Mục Đăng xuất
           ListTile(
             leading: const Icon(Icons.logout),
