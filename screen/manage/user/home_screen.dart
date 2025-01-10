@@ -1,66 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:card_swiper/card_swiper.dart'; // Import đúng thư viện
+import 'package:card_swiper/card_swiper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../fetch_api.dart';
 import '../../auth/sign_in_screen.dart';
+import 'recipe_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late List<dynamic> foodList = []; // Danh sách món ăn
-  late List<int> favoriteIds = []; // Danh sách các MaCongThuc đã yêu thích
+  late List<dynamic> foodList = [];
 
   @override
   void initState() {
     super.initState();
-    _fetchRecipes(); // Lấy công thức từ API
-    _fetchFavorites(); // Lấy danh sách công thức yêu thích của người dùng
+    _fetchRecipes();
   }
 
-  // Gọi API để lấy danh sách công thức món ăn
   Future<void> _fetchRecipes() async {
-    List<dynamic> recipes = await FetchApi.fetchRecipes();
+    final List<dynamic> recipes = await FetchApi.fetchRecipes();
     setState(() {
-      foodList = recipes; // Lưu danh sách món ăn
+      foodList = recipes;
     });
   }
 
-  // Lấy danh sách công thức yêu thích của người dùng
-  Future<void> _fetchFavorites() async {
-    List<int> favorites = await FetchApi.fetchFavorites();
-    setState(() {
-      favoriteIds = favorites; // Cập nhật danh sách yêu thích
-    });
-  }
-
-  // Thêm món ăn vào yêu thích
-  Future<void> _addToFavorites(int MaCongThuc) async {
-    bool success = await FetchApi.addToFavorites(MaCongThuc);
-    if (success) {
-      setState(() {
-        favoriteIds.add(MaCongThuc); // Thêm vào danh sách yêu thích
-      });
-      print('Đã thêm vào yêu thích');
-    }
-  }
-
-  // Bỏ món ăn khỏi yêu thích
-  Future<void> _removeFromFavorites(int MaCongThuc) async {
-    bool success = await FetchApi.removeFromFavorites(MaCongThuc);
-    if (success) {
-      setState(() {
-        favoriteIds.remove(MaCongThuc); // Xóa khỏi danh sách yêu thích
-      });
-      print('Đã bỏ yêu thích');
-    }
-  }
-
-  // Hiển thị menu thông tin cá nhân và đăng xuất
   void _showProfileMenu(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -69,18 +36,16 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: Icon(Icons.account_circle),
-              title: Text('Xem thông tin cá nhân'),
+              leading: const Icon(Icons.account_circle),
+              title: const Text('Thay đổi thông tin cá nhân'),
               onTap: () {
-                // Chuyển hướng tới màn hình thông tin cá nhân
                 Navigator.pushNamed(context, '/user-profile');
               },
             ),
             ListTile(
-              leading: Icon(Icons.logout),
-              title: Text('Đăng xuất'),
+              leading: const Icon(Icons.logout),
+              title: const Text('Đăng xuất'),
               onTap: () async {
-                // Xóa token và chuyển hướng về trang đăng nhập
                 SharedPreferences prefs = await SharedPreferences.getInstance();
                 await prefs.remove('token');
                 Navigator.pushReplacement(
@@ -99,84 +64,98 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Trang Chủ'),
+        title: const Text("Danh sách công thức món ăn"),
         actions: [
           IconButton(
-            icon: Icon(Icons.account_circle),
-            onPressed: () {
-              // Tạo menu khi nhấn avatar
-              _showProfileMenu(context);
-            },
+            icon: const Icon(Icons.account_circle),
+            onPressed: () => _showProfileMenu(context),
           ),
         ],
       ),
-      body: Center(
-        child: foodList.isEmpty
-            ? CircularProgressIndicator() // Hiển thị loading khi chưa có dữ liệu
-            : Swiper(
-                itemCount: foodList.length,
-                itemBuilder: (BuildContext context, int index) {
-                  bool isFavorite = favoriteIds.contains(foodList[index]['MaCongThuc']);
-                  return Card(
-                    elevation: 5.0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15.0),
-                    ),
-                    color: Colors.orange[100],
-                    child: Stack(
-                      children: [
-                        // Nội dung Card
-                        Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                foodList[index]['TenCongThuc'], // Tên công thức món ăn
-                                style: TextStyle(
-                                    fontSize: 24, fontWeight: FontWeight.bold),
-                              ),
-                              SizedBox(height: 10),
-                              Text(
-                                '${foodList[index]['MoTa']}', // Mô tả món ăn
-                                style: TextStyle(fontSize: 16),
-                              ),
-                            ],
-                          ),
-                        ),
-                        // Nút yêu thích
-                        Positioned(
-                          top: 10,
-                          right: 10,
-                          child: IconButton(
-                            icon: Icon(
-                              isFavorite
-                                  ? Icons.favorite
-                                  : Icons.favorite_border,
-                              color: isFavorite ? Colors.red : Colors.grey,
-                            ),
-                            onPressed: () {
-                              if (isFavorite) {
-                                _removeFromFavorites(foodList[index]['MaCongThuc']);
-                              } else {
-                                _addToFavorites(foodList[index]['MaCongThuc']);
-                              }
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                loop: false,
-                autoplay: false,
-                itemHeight: 250,
-                itemWidth: double.infinity,
-                viewportFraction: 0.85,
-                scale: 0.9,
-                onIndexChanged: (index) {
-                  print('Đang quẹt đến món ăn: ${foodList[index]['TenCongThuc']}');
-                },
+      body: foodList.isEmpty
+          ? const Center(child: CircularProgressIndicator())
+          : Swiper(
+              itemCount: foodList.length,
+              itemBuilder: (BuildContext context, int index) {
+                final recipe = foodList[index];
+                return _buildRecipeCard(recipe);
+              },
+              layout: SwiperLayout.STACK,
+              itemWidth: MediaQuery.of(context).size.width * 0.8,
+              itemHeight: MediaQuery.of(context).size.height * 0.6,
+              onIndexChanged: (index) {
+                print("Swiped to index $index");
+              },
+              onTap: (index) {
+                final recipe = foodList[index];
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        RecipeDetailScreen(recipeId: recipe['MaCongThuc']),
+                  ),
+                );
+              },
+              control: SwiperControl(),
+              pagination: SwiperPagination(
+                builder: DotSwiperPaginationBuilder(
+                  color: Colors.grey,
+                  activeColor: Colors.red,
+                  size: 8.0,
+                  activeSize: 10.0,
+                ),
               ),
+            ),
+    );
+  }
+
+  Widget _buildRecipeCard(dynamic recipe) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+      elevation: 8.0,
+      child: Column(
+        children: [
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => RecipeDetailScreen(recipeId: recipe['MaCongThuc']),
+                ),
+              );
+            },
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(15.0)),
+              child: Image.network(
+                recipe['HinhAnh'] ?? '',
+                height: 200,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  recipe['TenCongThuc'] ?? '',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  recipe['MoTa'] ?? '',
+                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

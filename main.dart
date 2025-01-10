@@ -40,6 +40,7 @@ class MyApp extends StatelessWidget {
         '/manage': (context) => ManageScreen(),
         '/user': (context) => UserProfileScreen(),
         '/sign-in': (context) => SignInScreen(),
+        '/admin-dashboard': (context) => ManageScreen(),
         
       },
     );

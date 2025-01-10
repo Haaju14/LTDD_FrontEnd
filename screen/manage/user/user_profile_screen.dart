@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Thêm thư viện SharedPreferences
+import 'package:shared_preferences/shared_preferences.dart'; // Thư viện SharedPreferences
 import '../../../fetch_api.dart';
 import 'dart:async';
 
@@ -12,6 +12,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController nameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
+  String userRole = ""; // Biến lưu role của người dùng
   bool isLoading = false;
 
   Future<void> fetchUserProfile() async {
@@ -20,12 +21,22 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     });
 
     try {
-      final userData = await FetchApi.fetchUserProfile();
+      // Lấy token từ SharedPreferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception("Không tìm thấy token");
+      }
+
+      // Gọi API để lấy thông tin người dùng
+      final userData = await FetchApi.fetchUserProfile(token);
       final userInfo = userData['nguoiDung'];
 
       setState(() {
         nameController.text = userInfo['TenNguoiDung'] ?? '';
         emailController.text = userInfo['Email'] ?? '';
+        userRole = userInfo['role'] ?? ''; // Lưu role của người dùng
       });
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -48,7 +59,17 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     });
 
     try {
+      // Lấy token từ SharedPreferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception("Không tìm thấy token");
+      }
+
+      // Gọi API để cập nhật thông tin
       await FetchApi.updateUserProfile(
+        token: token,
         name: nameController.text,
         email: emailController.text,
       );
@@ -67,8 +88,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
-  
-  
   @override
   void initState() {
     super.initState();
@@ -123,7 +142,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       ],
                     ),
                   ),
-                  SizedBox(height: 32),
+                  const SizedBox(height: 32),
+                  if (userRole == "Admin") // Kiểm tra nếu role là Admin
+                    ListTile(
+                      leading: const Icon(Icons.admin_panel_settings),
+                      title: const Text("Quản lý"),
+                      onTap: () {
+                        Navigator.pushNamed(context, '/admin-dashboard');
+                      },
+                    ),
                 ],
               ),
             ),

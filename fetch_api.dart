@@ -218,7 +218,7 @@ class FetchApi {
   }
 
   // Lấy thông tin người dùng
-  static Future<Map<String, dynamic>> fetchUserProfile() async {
+  static Future<Map<String, dynamic>> fetchUserProfile(String token) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('token');
 
@@ -243,6 +243,7 @@ class FetchApi {
 
   // Cập nhật thông tin người dùng
   static Future<void> updateUserProfile({
+    required String token,
     required String name,
     required String email,
   }) async {
@@ -453,6 +454,37 @@ class FetchApi {
 
     if (response.statusCode != 200) {
       throw Exception('Lỗi khi xóa danh mục');
+    }
+  }
+
+  static Future<Map<String, dynamic>> fetchRecipeDetails(int id) async {
+    try {
+      // Lấy token từ SharedPreferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception('Token không hợp lệ');
+      }
+
+      // Gọi API lấy chi tiết công thức
+      final response = await http.get(
+        Uri.parse('$baseUrl/cong-thuc/xemchitiet/$id'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Chuyển đổi dữ liệu JSON từ response
+        final data = jsonDecode(response.body);
+        return data; // Trả về dữ liệu chi tiết công thức
+      } else {
+        throw Exception('Lỗi khi lấy chi tiết công thức');
+      }
+    } catch (e) {
+      throw Exception('Lỗi khi gọi API: $e');
     }
   }
 
