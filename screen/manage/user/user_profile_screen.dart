@@ -142,15 +142,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 32),
-                  if (userRole == "Admin") // Kiểm tra nếu role là Admin
-                    ListTile(
-                      leading: const Icon(Icons.admin_panel_settings),
-                      title: const Text("Quản lý"),
-                      onTap: () {
-                        Navigator.pushNamed(context, '/admin-dashboard');
-                      },
-                    ),
                 ],
               ),
             ),

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:card_swiper/card_swiper.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../../fetch_api.dart';
-import '../../auth/sign_in_screen.dart';
+import 'profile_menu.dart';
 import 'recipe_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -28,38 +27,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _showProfileMenu(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.account_circle),
-              title: const Text('Thay đổi thông tin cá nhân'),
-              onTap: () {
-                Navigator.pushNamed(context, '/user-profile');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text('Đăng xuất'),
-              onTap: () async {
-                SharedPreferences prefs = await SharedPreferences.getInstance();
-                await prefs.remove('token');
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => SignInScreen()),
-                );
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -68,7 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.account_circle),
-            onPressed: () => _showProfileMenu(context),
+            onPressed: () => showProfileMenu(context), // Gọi hàm showProfileMenu từ file riêng
           ),
         ],
       ),

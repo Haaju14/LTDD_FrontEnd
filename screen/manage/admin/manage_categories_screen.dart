@@ -73,12 +73,13 @@ class _ManageCategoriesScreenState extends State<ManageCategoriesScreen> {
                       IconButton(
                         icon: Icon(Icons.edit),
                         onPressed: () {
-                          // Chuyển đến màn hình chỉnh sửa
+                          // Truyền id hợp lệ, đảm bảo không null
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => EditCategoryScreen(
-                                categoryId: category['id'],
+                                categoryId: category['id'] ??
+                                    0, // Truyền id hợp lệ (nếu null thì 0)
                                 initialCategoryName: category['TenDanhMuc'],
                               ),
                             ),
@@ -88,7 +89,8 @@ class _ManageCategoriesScreenState extends State<ManageCategoriesScreen> {
                       IconButton(
                         icon: Icon(Icons.delete),
                         onPressed: () {
-                          deleteCategory(category['id']);
+                          deleteCategory(category['id'] ??
+                              0); // Truyền id hợp lệ (nếu null thì 0)
                         },
                       ),
                     ],
@@ -100,7 +102,15 @@ class _ManageCategoriesScreenState extends State<ManageCategoriesScreen> {
         child: Icon(Icons.add),
         onPressed: () {
           // Thêm danh mục mới
-          Navigator.pushNamed(context, '/edit_category', arguments: null);
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => EditCategoryScreen(
+                categoryId: 0, // Truyền 0 để thêm mới
+                initialCategoryName: '',
+              ),
+            ),
+          );
         },
       ),
     );

@@ -488,5 +488,48 @@ class FetchApi {
     }
   }
 
+  // Lấy danh sách công thức trong bảng BLACKLIST
+  Future<List<dynamic>> fetchBlacklist() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('token');
+      if (token == null) {
+        throw Exception('Không tìm thấy token');
+      }
+      final response = await http.get(
+        Uri.parse('$baseUrl/blacklist/all'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['danhSachCongThucBlacklist'];
+      } else {
+        throw Exception('Lỗi khi lấy danh sách blacklist');
+      }
+    } catch (error) {
+      throw Exception('Có lỗi xảy ra: $error');
+    }
+  }
+
+  // Xóa công thức trong danh sách BLACKLIST
+  static Future<void> deleteBlacklistItem(
+      String maBlackList, String token) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/blacklist/delete/$maBlackList'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Lỗi khi xóa công thức');
+    }
+  }
+
   static getRecipesList(String token) {}
 }
