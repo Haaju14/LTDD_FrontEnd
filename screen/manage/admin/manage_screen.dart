@@ -1,6 +1,6 @@
+// lib/screens/manage/manage_screen.dart
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../../auth/sign_in_screen.dart';
+import '../../auth/log_out.dart';
 import 'manage_categories_screen.dart';
 import 'manage_recipes_screen.dart';
 import 'manage_user_screen.dart'; // Thêm import màn hình đăng nhập
@@ -71,13 +71,8 @@ class _ManageScreenState extends State<ManageScreen> {
               leading: Icon(Icons.logout),
               title: Text('Đăng xuất'),
               onTap: () async {
-                // Xóa token và chuyển hướng về trang đăng nhập
-                SharedPreferences prefs = await SharedPreferences.getInstance();
-                await prefs.remove('token');
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => SignInScreen()),
-                );
+                // Gọi hàm đăng xuất từ class Logout
+                await Logout.logOut(context);
               },
             ),
           ],
