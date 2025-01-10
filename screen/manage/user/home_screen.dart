@@ -3,7 +3,6 @@ import 'package:card_swiper/card_swiper.dart'; // Import đúng thư viện
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../fetch_api.dart';
 import '../../auth/sign_in_screen.dart';
-import 'user_profile_screen.dart'; // Màn hình thông tin cá nhân
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
